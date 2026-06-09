@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Андалальский диалект — словарь (Саидова 2019)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            background: #f8f6f2;
+            color: #2c2418;
+            line-height: 1.5;
+        }
+
+        /* Шапка */
+        .header {
+            background: #2e5a4f;
+            color: white;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .header h1 {
+            font-size: 1.9rem;
+            letter-spacing: -0.5px;
+            margin-bottom: 0.5rem;
+        }
+        .header p {
+            font-size: 0.9rem;
+            opacity: 0.85;
+        }
+
+        /* Поиск */
+        .search-panel {
+            max-width: 1100px;
+            margin: 1.5rem auto;
+            padding: 0 1rem;
+        }
+        .search-box {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            background: white;
+            border-radius: 60px;
+            padding: 5px 5px 5px 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid #e2ddd6;
+        }
+        .search-box input {
+            flex: 1;
+            border: none;
+            padding: 14px 0;
+            font-size: 1rem;
+            background: transparent;
+            outline: none;
+        }
+        .search-box button {
+            background: #2e5a4f;
+            border: none;
+            color: white;
+            padding: 8px 28px;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .search-box button:hover {
+            background: #1f4038;
+        }
+        .stats {
+            margin-top: 10px;
+            font-size: 0.8rem;
+            color: #6b5a48;
+            text-align: right;
+        }
+
+        /* Карточки результатов */
+        .results-container {
+            max-width: 1100px;
+            margin: 1.5rem auto;
+            padding: 0 1rem;
+        }
+        .card {
+            background: white;
+            border-radius: 24px;
+            margin-bottom: 1.2rem;
+            padding: 1.3rem 1.6rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            border: 1px solid #ece7df;
+            transition: 0.2s;
+        }
+        .card:hover {
+            border-color: #cfc8bc;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.05);
+        }
+        .headword {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1f3b34;
+            border-left: 5px solid #c9ac7c;
+            padding-left: 18px;
+            margin-bottom: 10px;
+            word-break: break-word;
+        }
+        .grammar {
+            display: inline-block;
+            background: #f0ebe3;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-family: monospace;
+            color: #5c4b32;
+            margin-bottom: 12px;
+        }
+        .translation {
+            background: #fefaf5;
+            padding: 10px 16px;
+            border-radius: 20px;
+            margin: 12px 0;
+            color: #2a4b3f;
+            font-weight: 500;
+        }
+        .raw {
+            font-size: 0.85rem;
+            color: #4b3e2e;
+            background: #f9f6f0;
+            padding: 12px 16px;
+            border-radius: 20px;
+            margin-top: 12px;
+            border-left: 3px solid #d4c2a8;
+        }
+        .source {
+            font-size: 0.7rem;
+            color: #8f7a5c;
+            margin-top: 12px;
+            text-align: right;
+            font-style: italic;
+        }
+        .no-results {
+            background: white;
+            border-radius: 2rem;
+            padding: 3rem;
+            text-align: center;
+            color: #8b7a66;
+        }
+
+        /* Пагинация */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin: 30px 0 50px;
+        }
+        .pagination button {
+            background: white;
+            border: 1px solid #ddd6cb;
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .pagination button:hover:not(:disabled) {
+            background: #e9e2d8;
+            border-color: #b9aa94;
+        }
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: default;
+        }
+        .page-info {
+            background: #f0ebe3;
+            padding: 6px 18px;
+            border-radius: 40px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 0.75rem;
+            padding: 1.5rem;
+            color: #8b7a66;
+            border-top: 1px solid #e2ddd6;
+            margin-top: 20px;
+        }
+
+        .loader {
+            text-align: center;
+            padding: 4rem;
+            font-size: 1.1rem;
+            color: #2e5a4f;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+</head>
+<body>
+
+<div class="header">
+    <h1>📖 Андалальский диалект</h1>
+    <p>Словарь Саидовой М.‑Ш. А. (2019) — аварский язык</p>
+</div>
+
+<div class="search-panel">
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="🔍 Поиск по слову, переводу или примерам..." autocomplete="off">
+        <button id="searchBtn">Найти</button>
+    </div>
+    <div class="stats" id="stats">Загрузка данных...</div>
+</div>
+
+<div class="results-container" id="resultsContainer">
+    <div class="loader">⏳ Загрузка словаря из dictionary.csv ...</div>
+</div>
+
+<div class="pagination" id="pagination">
+    <button id="prevBtn" disabled>← Назад</button>
+    <span class="page-info" id="pageInfo">Страница 1</span>
+    <button id="nextBtn" disabled>Вперед →</button>
+</div>
+
+<div class="footer">
+    Источник: Саидова М.‑Ш. А. «Андалальский диалект аварского языка» (2019)<br>
+    Данные загружаются из файла <strong>dictionary.csv</strong>, лежащего в той же папке.
+</div>
+
+<script>
+    // -------------------- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ --------------------
+    let fullData = [];           // все записи (массив объектов)
+    let filteredData = [];       // отфильтрованные записи
+    let currentPage = 1;
+    const rowsPerPage = 20;      // записей на странице
+    let headers = [];
+
+    // DOM-элементы
+    const searchInput = document.getElementById('searchInput');
+    const searchBtn = document.getElementById('searchBtn');
+    const resultsContainer = document.getElementById('resultsContainer');
+    const statsDiv = document.getElementById('stats');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const pageInfoSpan = document.getElementById('pageInfo');
+
+    // -------------------- ЗАГРУЗКА CSV (отдельный файл) --------------------
+    function loadDictionary() {
+        // Пытаемся загрузить dictionary.csv из той же директории
+        Papa.parse("dictionary.csv", {
+            download: true,
+            header: true,
+            skipEmptyLines: true,
+            encoding: "UTF-8",
+            complete: function(results) {
+                if (results.errors && results.errors.length) {
+                    console.warn("Ошибки парсинга:", results.errors);
+                }
+                headers = results.meta.fields;
+                if (!headers || headers.length === 0) {
+                    resultsContainer.innerHTML = `<div class="no-results">❌ Не удалось прочитать CSV. Убедитесь, что файл <strong>dictionary.csv</strong> лежит рядом с index.html и имеет правильный формат (первая строка — заголовки).</div>`;
+                    statsDiv.innerText = "Ошибка загрузки";
+                    return;
+                }
+                fullData = results.data.filter(row => {
+                    // отбрасываем полностью пустые строки
+                    return Object.values(row).some(v => v && v.trim() !== "");
+                }).map(row => {
+                    let obj = {};
+                    headers.forEach(h => { obj[h] = (row[h] || "").toString(); });
+                    return obj;
+                });
+
+                if (fullData.length === 0) {
+                    resultsContainer.innerHTML = `<div class="no-results">📭 Файл dictionary.csv не содержит записей.</div>`;
+                    statsDiv.innerText = "Нет данных";
+                    return;
+                }
+
+                // Инициализация
+                filteredData = [...fullData];
+                currentPage = 1;
+                renderResults();
+                updateStats();
+            },
+            error: function(err) {
+                console.error(err);
+                resultsContainer.innerHTML = `<div class="no-results">⚠️ Не удалось загрузить dictionary.csv. Проверьте, что файл находится в той же папке, что и index.html, и что он доступен для чтения.</div>`;
+                statsDiv.innerText = "Ошибка загрузки файла";
+            }
+        });
+    }
+
+    // -------------------- ОТРИСОВКА КАРТОЧЕК --------------------
+    function renderResults() {
+        if (!filteredData.length) {
+            resultsContainer.innerHTML = `<div class="no-results">😔 Ничего не найдено. Попробуйте изменить поисковый запрос.</div>`;
+            updatePaginationButtons();
+            return;
+        }
+
+        const start = (currentPage - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
+        const pageItems = filteredData.slice(start, end);
+
+        let html = '';
+        for (let item of pageItems) {
+            // безопасное получение полей
+            const headword = item.headword || '';
+            const grammar = item.grammar || '';
+            const translation = item.translation || '';
+            const raw = item.raw || '';
+            const source = item.source || 'Саидова 2019 — Андалальский диалект';
+
+            html += `
+                <div class="card">
+                    <div class="headword">${escapeHtml(headword)}</div>
+                    ${grammar ? `<div class="grammar">${escapeHtml(grammar)}</div>` : ''}
+                    ${translation ? `<div class="translation">📖 ${escapeHtml(translation)}</div>` : ''}
+                    ${raw ? `<div class="raw">📜 ${escapeHtml(raw)}</div>` : ''}
+                    <div class="source">📚 ${escapeHtml(source)}</div>
+                </div>
+            `;
+        }
+        resultsContainer.innerHTML = html;
+        updatePaginationButtons();
+    }
+
+    // -------------------- ПОИСК (по всем полям) --------------------
+    function performSearch() {
+        const term = searchInput.value.trim().toLowerCase();
+        if (term === "") {
+            filteredData = [...fullData];
+        } else {
+            filteredData = fullData.filter(item => {
+                // ищем в любом поле
+                for (let key of headers) {
+                    const val = item[key] || "";
+                    if (val.toLowerCase().includes(term)) return true;
+                }
+                return false;
+            });
+        }
+        currentPage = 1;
+        renderResults();
+        updateStats();
+    }
+
+    function updateStats() {
+        const total = filteredData.length;
+        statsDiv.innerText = `${total} записей ${searchInput.value.trim() ? '(результат поиска)' : '(всего)'}`;
+    }
+
+    // -------------------- ПАГИНАЦИЯ --------------------
+    function updatePaginationButtons() {
+        const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+        pageInfoSpan.innerText = `Страница ${currentPage} из ${totalPages || 1}`;
+        prevBtn.disabled = (currentPage <= 1);
+        nextBtn.disabled = (currentPage >= totalPages);
+    }
+
+    function goPrev() {
+        if (currentPage > 1) {
+            currentPage--;
+            renderResults();
+        }
+    }
+
+    function goNext() {
+        const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+        if (currentPage < totalPages) {
+            currentPage++;
+            renderResults();
+        }
+    }
+
+    // -------------------- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ --------------------
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+            return c; // сохраняем суррогатные пары (аварские буквы)
+        });
+    }
+
+    // -------------------- ОБРАБОТЧИКИ СОБЫТИЙ --------------------
+    searchBtn.addEventListener('click', performSearch);
+    searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') performSearch();
+    });
+    prevBtn.addEventListener('click', goPrev);
+    nextBtn.addEventListener('click', goNext);
+
+    // -------------------- СТАРТ --------------------
+    loadDictionary();
+</script>
+</body>
+</html>
